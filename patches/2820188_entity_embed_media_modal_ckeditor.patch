@@ -1,0 +1,48 @@
+diff --git a/src/Form/EntityEmbedDialog.php b/src/Form/EntityEmbedDialog.php
+index ae0194b..c4171e7 100644
+--- a/src/Form/EntityEmbedDialog.php
++++ b/src/Form/EntityEmbedDialog.php
+@@ -520,7 +520,7 @@ class EntityEmbedDialog extends FormBase {
+    *   The current state of the form.
+    */
+   public function validateSelectStep(array $form, FormStateInterface $form_state) {
+-    if ($form_state->hasValue(['entity_browser', 'entities'])) {
++    if (($form_state->hasValue(['entity_browser', 'entities'])) && (count($form_state->getValue(['entity_browser', 'entities'])) > 0)) {
+       $id = $form_state->getValue(['entity_browser', 'entities', 0])->id();
+       $element = $form['entity_browser'];
+     }
+diff --git a/src/Plugin/EmbedType/Entity.php b/src/Plugin/EmbedType/Entity.php
+index 967ffb3..86b1295 100644
+--- a/src/Plugin/EmbedType/Entity.php
++++ b/src/Plugin/EmbedType/Entity.php
+@@ -150,15 +150,22 @@ class Entity extends EmbedTypeBase implements ContainerFactoryPluginInterface {
+ 
+       /** @var \Drupal\entity_browser\EntityBrowserInterface[] $browsers */
+       if ($this->entityTypeManager->hasDefinition('entity_browser') && ($browsers = $this->entityTypeManager->getStorage('entity_browser')->loadMultiple())) {
+-        $ids = array_keys($browsers);
+-        $labels = array_map(
+-          function ($item) {
+-            /** @var \Drupal\entity_browser\EntityBrowserInterface $item */
+-            return $item->label();
+-          },
+-          $browsers
++
++        // Filter out unsupported displays & return array of ids and labels.
++        $browsers = array_map(
++           function ($item) {
++             /** @var \Drupal\entity_browser\EntityBrowserInterface $item */
++             return $item->label();
++           },
++          array_filter(
++            $browsers,
++            function ($item) {
++              /** @var \Drupal\entity_browser\EntityBrowserInterface $item */
++              return $item->getDisplay() !== 'modal';
++            }
++          )
+         );
+-        $options = ['_none' => $this->t('None (autocomplete)')] + array_combine($ids, $labels);
++        $options = ['_none' => $this->t('None (autocomplete)')] + $browsers;
+         $form['entity_browser'] = [
+           '#type' => 'select',
+           '#title' => $this->t('Entity browser'),

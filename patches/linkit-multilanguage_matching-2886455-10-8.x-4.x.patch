@@ -1,0 +1,139 @@
+diff -urbN a/src/Plugin/Linkit/Matcher/EntityMatcher.php b/src/Plugin/Linkit/Matcher/EntityMatcher.php
+--- a/src/Plugin/Linkit/Matcher/EntityMatcher.php	2017-03-21 21:57:17.000000000 +0200
++++ b/src/Plugin/Linkit/Matcher/EntityMatcher.php	2018-06-08 14:41:11.869785987 +0300
+@@ -10,8 +10,10 @@
+ use Drupal\Component\Utility\Html;
+ use Drupal\Core\Database\Connection;
+ use Drupal\Core\Entity\EntityManagerInterface;
++use Drupal\Core\Entity\TranslatableInterface;
+ use Drupal\Core\Extension\ModuleHandlerInterface;
+ use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Language\LanguageManagerInterface;
+ use Drupal\Core\Session\AccountInterface;
+ use Drupal\linkit\ConfigurableMatcherBase;
+ use Drupal\linkit\MatcherTokensTrait;
+@@ -65,9 +67,16 @@
+   protected $target_type;
+ 
+   /**
++   * The language manager.
++   *
++   * @var \Drupal\Core\Language\LanguageManagerInterface
++   */
++  protected $languageManager;
++
++  /**
+    * {@inheritdoc}
+    */
+-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database, EntityManagerInterface $entity_manager, ModuleHandlerInterface $module_handler,   AccountInterface $current_user) {
++  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database, EntityManagerInterface $entity_manager, ModuleHandlerInterface $module_handler,   AccountInterface $current_user, LanguageManagerInterface $language_manager) {
+     parent::__construct($configuration, $plugin_id, $plugin_definition);
+ 
+     if (empty($plugin_definition['target_entity'])) {
+@@ -77,6 +86,7 @@
+     $this->entityManager = $entity_manager;
+     $this->moduleHandler = $module_handler;
+     $this->currentUser = $current_user;
++    $this->languageManager = $language_manager;
+     $this->target_type = $plugin_definition['target_entity'];
+   }
+ 
+@@ -91,7 +101,8 @@
+       $container->get('database'),
+       $container->get('entity.manager'),
+       $container->get('module_handler'),
+-      $container->get('current_user')
++      $container->get('current_user'),
++      $container->get('language_manager')
+     );
+   }
+ 
+@@ -129,6 +140,19 @@
+       ]);
+     }
+ 
++    $translated_entities_option = $this->t('No');
++    if ($this->configuration['translated_entities'] == 1) {
++      $translated_entities_option = $this->t('Current language');
++    }
++    if ($this->configuration['translated_entities'] == 2) {
++      $translated_entities_option = $this->t('Actual match');
++    }
++    if ($this->configuration['translated_entities']) {
++      $summery[] = $this->t('Use translated entities: @translated_entities', [
++        '@translated_entities' => $translated_entities_option,
++      ]);
++    }
++
+     return $summery;
+   }
+ 
+@@ -140,6 +164,7 @@
+       'result_description' => '',
+       'bundles' => [],
+       'group_by_bundle' => FALSE,
++      'translated_entities' => 0,
+     ];
+   }
+ 
+@@ -185,6 +210,18 @@
+       ];
+     }
+ 
++    $form['translated_entities'] = [
++      '#type' => 'select',
++      '#title' => $this->t('Use translated entities'),
++      '#description' => $this->t('The transalted entities will be used to create suggestions (if possible)'),
++      '#default_value' => $this->configuration['translated_entities'],
++      '#options' => [
++        0 => $this->t('No'),
++        1 => $this->t('Current language'),
++        2 => $this->t('Actual match'),
++      ],
++    ];
++
+     return $form;
+   }
+ 
+@@ -201,6 +238,7 @@
+     $this->configuration['result_description'] = $form_state->getValue('result_description');
+     $this->configuration['bundles'] = $form_state->getValue('bundles');
+     $this->configuration['group_by_bundle'] = $form_state->getValue('group_by_bundle');
++    $this->configuration['translated_entities'] = $form_state->getValue('translated_entities');
+   }
+ 
+   /**
+@@ -233,6 +271,33 @@
+         continue;
+       }
+ 
++      if ($this->configuration['translated_entities'] && $entity instanceof TranslatableInterface) {
++        if ($this->configuration['translated_entities'] == 1) {
++          // If we need to show an entity in current UI language, just try
++          // to retrieve it.
++          $langcode = $this->languageManager->getCurrentLanguage()->getId();;
++          if ($entity->hasTranslation($langcode)) {
++            $entity = $entity->getTranslation($langcode);
++          }
++        }
++        elseif ($this->configuration['translated_entities'] == 2) {
++          // If we need to show actually matched entity, we can just retrieve
++          // them from the entity query results since it returns only ids.
++          // So we will iterate over all existing translations and looking
++          // for matched label.
++          $languages = $entity->getTranslationLanguages();
++          foreach ($languages as $language) {
++            if ($entity->hasTranslation($language->getId())) {
++              $entity_translation = $entity->getTranslation($language->getId());
++              if (stripos($entity_translation->label(), $string) !== FALSE) {
++                $entity = $entity_translation;
++                break;
++              }
++            }
++          }
++        }
++      }
++
+       $matches[] = [
+         'title' => $this->buildLabel($entity),
+         'description' => $this->buildDescription($entity),

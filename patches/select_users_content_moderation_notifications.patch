@@ -1,0 +1,54 @@
+diff --git a/content_moderation_notifications.module b/content_moderation_notifications.module
+index 4399209..d467a01 100644
+--- a/content_moderation_notifications.module
++++ b/content_moderation_notifications.module
+@@ -72,7 +72,15 @@ function content_moderation_notifications_mail($key, &$message, $params) {
+ function _content_moderation_notifications_ensure_revision(EntityInterface $entity) {
+   $notification_info = Drupal::service('content_moderation_notifications.notification_information');
+   if ($notification_info->isModeratedEntity($entity) && !isset($entity->last_revision)) {
+-    $entity->last_revision = $notification_info->getLatestRevision($entity->getEntityTypeId(), $entity->id());
++    $current_language = $entity->language();
++    $last_revision = $notification_info->getLatestRevision($entity->getEntityTypeId(), $entity->id());
++
++    // Make sure we load the revision in the given language if possible.
++    if (!empty($last_revision) && $last_revision->hasTranslation($current_language->getId())) {
++      $last_revision = $last_revision->getTranslation($current_language->getId());
++    }
++
++    $entity->last_revision = $last_revision;
+   }
+ }
+ 
+diff --git a/src/Notification.php b/src/Notification.php
+index 7751f76..92cf6c4 100644
+--- a/src/Notification.php
++++ b/src/Notification.php
+@@ -141,7 +141,14 @@ class Notification implements NotificationInterface {
+       }
+ 
+       // Adhoc emails.
+-      $adhoc_emails = array_map('trim', explode(',', $notification->getEmails()));
++      // $adhoc_emails = array_map('trim', explode(',', $notification->getEmails()));
++      // smals burnout use token into cc field
++      $token_service = \Drupal::token();
++      $context = $data['params']['context'];
++
++      $adhoc_emails = $token_service->replace($notification->getEmails(), $context, ['clear' => TRUE]);
++      
++      $adhoc_emails = array_map('trim', explode(',', $adhoc_emails));
+       foreach ($adhoc_emails as $email) {
+         $data['to'][] = $email;
+       }
+diff --git a/src/NotificationInformation.php b/src/NotificationInformation.php
+index d2385b0..4b77bef 100644
+--- a/src/NotificationInformation.php
++++ b/src/NotificationInformation.php
+@@ -52,7 +52,7 @@ class NotificationInformation implements NotificationInformationInterface {
+   public function getPreviousState(ContentEntityInterface $entity) {
+     $previous_state = FALSE;
+     $workflow = $this->getWorkflow($entity);
+-    if (isset($entity->last_revision)) {
++    if (isset($entity->last_revision) && !empty($entity->last_revision->moderation_state->value)) {
+       $previous_state = $workflow->getTypePlugin()->getState($entity->last_revision->moderation_state->value);
+ 
+     }

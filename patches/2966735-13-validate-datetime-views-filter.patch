@@ -1,0 +1,79 @@
+diff --git a/core/modules/datetime/src/Plugin/views/filter/Date.php b/core/modules/datetime/src/Plugin/views/filter/Date.php
+index 1421520..8cc8df4 100644
+--- a/core/modules/datetime/src/Plugin/views/filter/Date.php
++++ b/core/modules/datetime/src/Plugin/views/filter/Date.php
+@@ -4,6 +4,7 @@
+ 
+ use Drupal\Component\Datetime\DateTimePlus;
+ use Drupal\Core\Datetime\DateFormatterInterface;
++use Drupal\Core\Form\FormStateInterface;
+ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
+ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+@@ -99,6 +100,66 @@ public static function create(ContainerInterface $container, array $configuratio
+   }
+ 
+   /**
++   * {@inheritdoc}
++   */
++  public function validateExposed(&$form, FormStateInterface $form_state) {
++    // Do not validate value if filter is not exposed or grouped.
++    if (empty($this->options['exposed']) || $this->options['is_grouped']) {
++      return;
++    }
++
++    $value = &$form_state->getValue($this->options['expose']['identifier']);
++
++    if (empty($value) && empty($this->options['expose']['required'])) {
++      // Who cares what the value is if it's exposed, and non-required and
++      // empty.
++      return;
++    }
++
++    if (!empty($this->options['expose']['use_operator']) && !empty($this->options['expose']['operator_id'])) {
++      $operator = &$form_state->getValue($this->options['expose']['operator_id']);
++    }
++    else {
++      $operator = $this->operator;
++    }
++    $operators = $this->operators();
++
++    $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
++    $languages = ['fr', 'nl', 'de', 'en'];
++    if ($operators[$operator]['values'] === 1) {
++      if(in_array($language, $languages)) {
++        $date_style = date_create_from_format('d/m/Y', $value);
++        if($date_style !== FALSE) {
++          $value = $date_style->format('m/d/Y');
++        }
++      }
++      $convert = new DateTimePlus($value);
++      if ($convert->hasErrors()) {
++        $form_state->setError($form[$this->options['expose']['identifier']], $this->t('Invalid date format.'));
++      }
++    }
++    elseif ($operators[$operator]['values'] === 2) {
++      if(in_array($language, $languages)) {
++        foreach ($value as $key => $date_value) {
++          $date_style = date_create_from_format('d/m/Y', $date_value);
++          if($date_style !== FALSE) {
++            $value[$key] = $date_style->format('m/d/Y');
++          }
++        }
++      }
++      $min = new DateTimePlus($value['min']);
++      if ($min->hasErrors()) {
++        $form_state->setError($form[$this->options['expose']['identifier']], $this->t('Invalid date format.'));
++      }
++      $max = new DateTimePlus($value['max']);
++      if ($max->hasErrors()) {
++        $form_state->setError($form[$this->options['expose']['identifier']], $this->t('Invalid date format.'));
++      }
++    }
++    parent::validateExposed($form, $form_state);
++  }
++
++  /**
+    * Override parent method, which deals with dates as integers.
+    */
+   protected function opBetween($field) {
