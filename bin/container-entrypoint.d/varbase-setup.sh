@@ -136,8 +136,17 @@ function configure {
   create-apache-vhost "${_name}"
   create-wrapper-scripts "${_name}"
 
+  for filename in $(ls /opt/bin/extra)
+  do
+    basefilename = $(basename $filename);
+    if [[ -n $(env | grep VARBASE_EXEC_${basefilenameˆˆ}) ]]; then
+      source /opt/bin/extra/${filename}
+    fi
+  done
+
   echo "[INFO] Run /opt/bin/drush/update.sh manually in order to launch database updates and cache clear."
-  echo "[INFO] Staging script support has not been introduced yet. But can be launched manually using the existing stage.sh scripts."
+  echo "[INFO] Staging script support is experimental. It can be launched manually using the existing stage.sh scripts."
+
 }
 
 function install {
