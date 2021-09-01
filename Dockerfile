@@ -4,15 +4,15 @@ ARG VERSION_ARG=""
 ARG RELEASE_ARG=""
 ARG BUILD_DATE_ARG=""
 
-ENV VARBASE_VERSION=${VERSION_ARG:-9.0.1} \
+ENV VARBASE_VERSION=${VERSION_ARG:-9.0.1}
 
 RUN echo "Download and configure Varbase ..." \
     && mkdir -p /opt/src \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv create-project Vardot/varbase-project:${VARBASE_VERSION} varbase --no-dev --no-interaction --working-dir /opt/src \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv remove drupal/core-project-message --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drush/drush --working-dir /opt/src/varbase \
-    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches --json '{"drupal/datetime": {"https://www.drupal.org/project/drupal/issues/2966735": "patches/2966735-13-validate-datetime-views-filter.patch"}}' \
-    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv update drupal/datetime \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches --json '{"drupal/datetime": {"https://www.drupal.org/project/drupal/issues/2966735": "patches/2966735-13-validate-datetime-views-filter.patch"}}' --working-dir /opt/src/varbase \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv update drupal/datetime --working-dir /opt/src/varbase \
     && cat >> /opt/src/varbase/docroot/sites/default/settings.php << EOL
 $settings['install_profile'] = 'varbase';
 $settings['hash_salt'] = getenv('HASH_SALT');
