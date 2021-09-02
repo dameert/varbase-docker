@@ -3,6 +3,7 @@ FROM docker.io/elasticms/base-php-dev:7.4 as builder
 ARG VERSION_ARG=""
 ARG RELEASE_ARG=""
 ARG BUILD_DATE_ARG=""
+ARG GITHUB_OAUTH_ARG=""
 
 ENV VARBASE_VERSION=${VERSION_ARG:-9.0.1}
 
@@ -11,6 +12,7 @@ COPY bin/buildtime/ /opt/bin/
 RUN echo "Download and configure Varbase ..." \
     && mkdir -p /opt/src \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv create-project Vardot/varbase-project:${VARBASE_VERSION} varbase --no-dev --no-interaction --working-dir /opt/src \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config github-oauth.github.com ${GITHUB_OAUTH_ARG} --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv remove drupal/core-project-message --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drush/drush --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches --json '{"drupal/datetime": {"https://www.drupal.org/project/drupal/issues/2966735": "patches/2966735-13-validate-datetime-views-filter.patch"}}' --working-dir /opt/src/varbase \
