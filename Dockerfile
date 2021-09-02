@@ -6,6 +6,8 @@ ARG BUILD_DATE_ARG=""
 
 ENV VARBASE_VERSION=${VERSION_ARG:-9.0.1}
 
+COPY bin/buildtime/ /opt/bin/
+
 RUN echo "Download and configure Varbase ..." \
     && mkdir -p /opt/src \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv create-project Vardot/varbase-project:${VARBASE_VERSION} varbase --no-dev --no-interaction --working-dir /opt/src \
@@ -13,38 +15,10 @@ RUN echo "Download and configure Varbase ..." \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drush/drush --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches --json '{"drupal/datetime": {"https://www.drupal.org/project/drupal/issues/2966735": "patches/2966735-13-validate-datetime-views-filter.patch"}}' --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv update drupal/datetime --working-dir /opt/src/varbase \
-    && cat >> /opt/src/varbase/docroot/sites/default/settings.php << EOL
-$settings['install_profile'] = 'varbase';
-$settings['hash_salt'] = getenv('HASH_SALT');
-$settings['trusted_host_patterns'] = getenv('TRUSTED_HOST_PATTERNS');
-
-$databases['default']['default'] = [
-  'database' => getenv('MYSQL_DATABASE'),
-  'driver' => 'mysql',
-  'host' => getenv('MYSQL_HOST'),
-  'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
-  'password' => urlencode(getenv('MYSQL_PASSWORD')),
-  'port' => getenv('MYSQL_PORT'),
-  'prefix' => '',
-  'username' => getenv('MYSQL_USER'),
-];
-
-$https = getenv('FORCE_HTTPS');
-if (false !== $https) {
-    $settings['https'] = TRUE;
-    $_SERVER['HTTPS'] = 'on';
-}
-
-$syncDir = getenv('CONFIG_SYNC_DIRECTORY');
-if (false !== $syncDir) {
- $config_directories['sync'] = getenv('CONFIG_SYNC_DIRECTORY');
-}
-
-EOL \
+    && source /opt/bin/configure.sh \
     && chmod a-w /opt/src/varbase/docroot/sites/default/settings.php
 
 FROM docker.io/elasticms/base-apache-fpm:7.4
-
 ARG VERSION_ARG=""
 ARG RELEASE_ARG=""
 ARG BUILD_DATE_ARG=""
@@ -62,7 +36,7 @@ LABEL varbase.build-date=$BUILD_DATE_ARG \
 
 USER root
 
-COPY bin/ /opt/bin/
+COPY bin/runtime/ /opt/bin/
 COPY etc/ /usr/local/etc/
 
 COPY --from=builder /opt/src/varbase /opt/src
