@@ -50,31 +50,26 @@ export BATS_VARBASE_DOCKER_IMAGE_NAME="${VARBASE_DOCKER_IMAGE_NAME:-docker.io/el
 }
 
 @test "[$TEST_FILE] Check for Varbase status page response code 200 for default domains" {
-    retry 12 5 curl_container ems :9000/status -H "'Host: ${SERVER_NAME}'" -s -w %{http_code} -o /dev/null
-    assert_output -l 0 $'200'
+    retry 12 5 curl_container varbase :9000/update.php -H "'Host: ${SERVER_NAME}'" -s -w %{http_code} -o /dev/null
+    assert_output -l 0 $'403'
 }
 
 @test "[$TEST_FILE] Check for Monitoring /real-time-status page response code 200" {
-  retry 12 5 curl_container ems :9000/real-time-status -H 'Host: default.localhost' -s -w %{http_code} -o /dev/null
+  retry 12 5 curl_container varbase :9000/real-time-status -H 'Host: default.localhost' -s -w %{http_code} -o /dev/null
   assert_output -l 0 $'200'
 }
 
 @test "[$TEST_FILE] Check for Monitoring /status page response code 200" {
-  retry 12 5 curl_container ems :9000/status -H 'Host: default.localhost' -s -w %{http_code} -o /dev/null
+  retry 12 5 curl_container varbase :9000/status -H 'Host: default.localhost' -s -w %{http_code} -o /dev/null
   assert_output -l 0 $'200'
 }
 
 @test "[$TEST_FILE] Check for Monitoring /server-status page response code 200" {
-  retry 12 5 curl_container ems :9000/server-status -H 'Host: default.localhost' -s -w %{http_code} -o /dev/null
+  retry 12 5 curl_container varbase :9000/server-status -H 'Host: default.localhost' -s -w %{http_code} -o /dev/null
   assert_output -l 0 $'200'
 }
 
 @test "[$TEST_FILE] Stop all and delete test containers" {
   command docker-compose -f docker-compose-fs.yml stop
   command docker-compose -f docker-compose-fs.yml rm -v -f  
-}
-
-@test "[$TEST_FILE] Cleanup Docker external volumes (local)" {
-  command docker volume rm ${BATS_EMS_STORAGE_VOLUME_NAME}
-  command docker volume rm ${BATS_EMS_CONFIG_VOLUME_NAME}
 }
