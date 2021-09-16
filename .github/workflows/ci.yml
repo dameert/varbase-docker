@@ -124,6 +124,11 @@ jobs:
       - name: Test Varbase Docker Image
         env: 
           VARBASE_DOCKER_IMAGE_NAME: ${{ steps.prep.outputs.ghcr_image }}:${{ env.CI_SHA_SHORT }}
+          VERSION_ARG: ${{ env.VARBASE_VERSION }}
+          RELEASE_ARG: ${{ env.CI_RUN_ID }}
+          VCS_REF_ARG: ${{ env.CI_SHA }}
+          BUILD_DATE_ARG: ${{ steps.prep.outputs.build_date }}
+          GITHUB_OAUTH_ARG: ${{ secrets.GHCR_TOKEN }}
         run: |
           bats -r test/tests.bats
 

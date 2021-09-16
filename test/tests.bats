@@ -24,7 +24,11 @@ export BATS_CONTAINER_HEAP_PERCENT="${BATS_CONTAINER_HEAP_PERCENT:-0.80}"
 export BATS_STORAGE_SERVICE_NAME="mysql"
 
 export BATS_VARBASE_DOCKER_IMAGE_NAME="${VARBASE_DOCKER_IMAGE_NAME:-docker.io/elasticms/varbase:rc}"
-export BATS_VARBASE_VERSION="${BATS_VARBASE_VERSION:-9.0.1}"
+export BATS_VARBASE_VERSION="${VERSION_ARG:-9.0.1}"
+export BATS_RELEASE_NUMBER=${RELEASE_NUMBER:-snapshot}
+export BATS_BUILD_DATE=${BUILD_DATE:-snapshot}
+export BATS_VCS_REF=${VCS_REF:-snapshot}
+export BATS_GITHUB_OAUTH=${GITHUB_OAUTH:-none}
 
 @test "[$TEST_FILE] Starting Varbase Storage Services (MySql)" {
   command docker-compose -f docker-compose.yml up -d mysql
