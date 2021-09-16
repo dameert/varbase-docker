@@ -2,24 +2,31 @@
 
 function check-env-variables {
   if [[ ! -n ${MYSQL_DATABASE} ]]; then
+    echo "Variable MYSQL_DATABASE is required"
     exit 1
   fi
   if [[ ! -n ${MYSQL_HOST} ]]; then
+    echo "Variable MYSQL_HOST is required"
     exit 1
   fi
   if [[ ! -n ${MYSQL_PASSWORD} ]]; then
+    echo "Variable MYSQL_PASSWORD is required"
     exit 1
   fi
   if [[ ! -n ${MYSQL_PORT} ]]; then
+    echo "Variable MYSQL_PORT is required"
     exit 1
   fi
   if [[ ! -n ${MYSQL_USER} ]]; then
+    echo "Variable MYSQL_USER is required"
     exit 1
   fi
   if [[ ! -n ${HASH_SALT} ]]; then
+    echo "Variable HASH_SALT is required"
     exit 1
   fi
   if [[ ! -n ${TRUSTED_HOST_PATTERNS} ]]; then
+    echo "Variable TRUSTED_HOST_PATTERNS is required"
     exit 1
   fi
 }
