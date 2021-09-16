@@ -109,6 +109,7 @@ jobs:
             RELEASE_ARG=${{ env.CI_RUN_ID }}
             VCS_REF_ARG=${{ env.CI_SHA }}
             BUILD_DATE_ARG=${{ steps.prep.outputs.build_date }}
+            GITHUB_OAUTH_ARG=${{ secrets.GHCR_TOKEN }}
           push: false
           load: true
           tags: ${{ steps.meta_ghcr.outputs.tags }}
@@ -138,6 +139,7 @@ jobs:
             RELEASE_ARG=${{ env.CI_RUN_ID }}
             VCS_REF_ARG=${{ env.CI_SHA }}
             BUILD_DATE_ARG=${{ steps.prep.outputs.build_date }}
+            GITHUB_OAUTH_ARG=${{ secrets.GHCR_TOKEN }}
           push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
           tags: ${{ steps.meta_ghcr.outputs.tags }}
           labels: ${{ steps.meta_ghcr.outputs.labels }}
@@ -154,6 +156,7 @@ jobs:
             RELEASE_ARG=${{ env.CI_RUN_ID }}
             VCS_REF_ARG=${{ env.CI_SHA }}
             BUILD_DATE_ARG=${{ steps.prep.outputs.build_date }}
+            GITHUB_OAUTH_ARG=${{ secrets.GHCR_TOKEN }}
           push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
           tags: ${{ steps.meta_dockerhub.outputs.tags }}
           labels: ${{ steps.meta_dockerhub.outputs.labels }}
