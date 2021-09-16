@@ -218,8 +218,7 @@ function install {
 
     echo "Install [ default ] CMS Domain from Environment variables ..."
 
-    env | envsubst > /tmp/default
-    source /tmp/default
+    touch /tmp/default
 
     configure "default"
 
