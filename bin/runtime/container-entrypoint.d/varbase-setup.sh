@@ -1,25 +1,25 @@
 #!/bin/bash
 
 function check-env-variables {
-  if [[ ! -n ${$MYSQL_DATABASE} ]]; then
+  if [[ ! -n ${MYSQL_DATABASE} ]]; then
     exit 1
   fi
-  if [[ ! -n ${$MYSQL_HOST} ]]; then
+  if [[ ! -n ${MYSQL_HOST} ]]; then
     exit 1
   fi
-  if [[ ! -n ${$MYSQL_PASSWORD} ]]; then
+  if [[ ! -n ${MYSQL_PASSWORD} ]]; then
     exit 1
   fi
-  if [[ ! -n ${$MYSQL_PORT} ]]; then
+  if [[ ! -n ${MYSQL_PORT} ]]; then
     exit 1
   fi
-  if [[ ! -n ${$MYSQL_USER} ]]; then
+  if [[ ! -n ${MYSQL_USER} ]]; then
     exit 1
   fi
-  if [[ ! -n ${$HASH_SALT} ]]; then
+  if [[ ! -n ${HASH_SALT} ]]; then
     exit 1
   fi
-  if [[ ! -n ${$TRUSTED_HOST_PATTERNS} ]]; then
+  if [[ ! -n ${TRUSTED_HOST_PATTERNS} ]]; then
     exit 1
   fi
 }

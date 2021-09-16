@@ -9,9 +9,9 @@ export BATS_ROOT_DB_USER="${BATS_ROOT_DB_USER:-root}"
 export BATS_ROOT_DB_PASSWORD="${BATS_ROOT_DB_PASSWORD:-password}"
 export BATS_ROOT_DB_NAME="${BATS_ROOT_DB_PASSWORD:-root}"
 
-export BATS_DB_DRIVER="${BATS_DB_DRIVER:-pgsql}"
-export BATS_DB_HOST="${BATS_DB_HOST:-postgresql}"
-export BATS_DB_PORT="${BATS_DB_PORT:-5432}"
+export BATS_DB_DRIVER="${BATS_DB_DRIVER:-mysql}"
+export BATS_DB_HOST="${BATS_DB_HOST:-mysql}"
+export BATS_DB_PORT="${BATS_DB_PORT:-3306}"
 export BATS_DB_USER="${BATS_DB_USER:-example_adm}"
 export BATS_DB_PASSWORD="${BATS_DB_PASSWORD:-example}"
 export BATS_DB_NAME="${BATS_DB_NAME:-example}"
@@ -24,6 +24,7 @@ export BATS_CONTAINER_HEAP_PERCENT="${BATS_CONTAINER_HEAP_PERCENT:-0.80}"
 export BATS_STORAGE_SERVICE_NAME="mysql"
 
 export BATS_VARBASE_DOCKER_IMAGE_NAME="${VARBASE_DOCKER_IMAGE_NAME:-docker.io/elasticms/varbase:rc}"
+export BATS_VARBASE_VERSION="${BATS_VARBASE_VERSION:-9.0.1}"
 
 @test "[$TEST_FILE] Starting Varbase Storage Services (MySql)" {
   command docker-compose -f docker-compose.yml up -d mysql
@@ -50,8 +51,8 @@ export BATS_VARBASE_DOCKER_IMAGE_NAME="${VARBASE_DOCKER_IMAGE_NAME:-docker.io/el
 }
 
 @test "[$TEST_FILE] Check for Varbase status page response code 200 for default domains" {
-    retry 12 5 curl_container varbase :9000/update.php -H "'Host: ${SERVER_NAME}'" -s -w %{http_code} -o /dev/null
-    assert_output -l 0 $'403'
+    retry 12 5 curl_container varbase :9000/install.php -H "'Host: ${SERVER_NAME}'" -s -w %{http_code} -o /dev/null
+    assert_output -l 0 $'200'
 }
 
 @test "[$TEST_FILE] Check for Monitoring /real-time-status page response code 200" {
@@ -70,6 +71,6 @@ export BATS_VARBASE_DOCKER_IMAGE_NAME="${VARBASE_DOCKER_IMAGE_NAME:-docker.io/el
 }
 
 @test "[$TEST_FILE] Stop all and delete test containers" {
-  command docker-compose -f docker-compose-fs.yml stop
-  command docker-compose -f docker-compose-fs.yml rm -v -f  
+  command docker-compose -f docker-compose.yml stop
+  command docker-compose -f docker-compose.yml rm -v -f
 }
