@@ -42,7 +42,7 @@ services:
     build:
       context: .
       args:
-        VERSION_ARG: ${BATS_ELASTICMS_ADMIN_VERSION}
+        VERSION_ARG: ${BATS_VARBASE_VERSION}
         RELEASE_ARG: ${BATS_RELEASE_NUMBER}
         BUILD_DATE_ARG: ${BATS_BUILD_DATE}
         VCS_REF_ARG: ${BATS_VCS_REF}
