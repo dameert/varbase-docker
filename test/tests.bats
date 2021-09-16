@@ -26,7 +26,7 @@ export BATS_STORAGE_SERVICE_NAME="mysql"
 export BATS_VARBASE_DOCKER_IMAGE_NAME="${VARBASE_DOCKER_IMAGE_NAME:-docker.io/elasticms/varbase:rc}"
 
 @test "[$TEST_FILE] Starting Varbase Storage Services (MySql)" {
-  command docker-compose -f docker-compose.yml up -d ${}
+  command docker-compose -f docker-compose.yml up -d mysql
   docker_wait_for_log mysql 240 "Starting MySQL"
 }
 
