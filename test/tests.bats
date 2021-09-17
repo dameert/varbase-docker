@@ -16,8 +16,8 @@ export BATS_DB_USER="${BATS_DB_USER:-example_adm}"
 export BATS_DB_PASSWORD="${BATS_DB_PASSWORD:-example}"
 export BATS_DB_NAME="${BATS_DB_NAME:-example}"
 export BATS_SERVER_NAME="${BATS_SERVER_NAME:-localhost}"
-export BATS_HASH_SALT=${BATS_HASH_SALT:-thisisadummysaltthatcannotbetrusted}
-export BATS_TRUSTED_HOST_PATTERNS=${BATS_TRUSTED_HOST_PATTERNS:-localhost}
+export BATS_HASH_SALT="${BATS_HASH_SALT:-thisisadummysaltthatcannotbetrusted}"
+export BATS_TRUSTED_HOST_PATTERNS="${BATS_TRUSTED_HOST_PATTERNS:-[\"localhost\"]}"
 
 export BATS_PHP_FPM_MAX_CHILDREN="${BATS_PHP_FPM_MAX_CHILDREN:-4}"
 export BATS_PHP_FPM_REQUEST_MAX_MEMORY_IN_MEGABYTES="${BATS_PHP_FPM_REQUEST_MAX_MEMORY_IN_MEGABYTES:-128}"
@@ -57,7 +57,7 @@ export BATS_GITHUB_OAUTH=${GITHUB_OAUTH:-none}
 }
 
 @test "[$TEST_FILE] Check for Varbase status page response code 200 for default domains" {
-    retry 12 5 curl_container varbase :9000/install.php -H "'Host: ${SERVER_NAME}'" -s -w %{http_code} -o /dev/null
+    retry 12 5 curl_container varbase :9000/core/install.php -H "'Host: ${SERVER_NAME}'" -s -w %{http_code} -o /dev/null
     assert_output -l 0 $'200'
 }
 
