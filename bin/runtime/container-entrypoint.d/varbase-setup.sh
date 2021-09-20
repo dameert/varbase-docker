@@ -29,6 +29,13 @@ function check-env-variables {
     echo "Variable TRUSTED_HOST_PATTERNS is required"
     exit 1
   fi
+  if [[ ! -n ${SERVER_NAME} ]]; then
+    echo "Variable SERVER_NAME is required"
+    exit 1
+  fi
+  if [[ ! -n ${VHOST_DOMAIN} ]]; then
+    echo "Variable VHOST_DOMAIN is not found, define a domain in this variable to access the admin of your Drupal installation."
+  fi
 }
 
 function create-wrapper-scripts {
@@ -45,9 +52,9 @@ set +o allexport
 
 if [ \${1:-list} = sql ] || [ \${1:-list} = dump ] ; then
   if [ \${1:-list} = sql ] ; then
-    mysql --port=\$DB_PORT --host=\$DB_HOST --user=\$DB_USER --password=\$DB_PASSWORD \$DB_NAME
+    mysql --port=\$MYSQL_PORT --host=\$MYSQL_HOST --user=\$MYSQL_USER --password=\$MYSQL_PASSWORD \$MYSQL_DATABASE
   else
-    mysqldump --port=\$DB_PORT --host=\$DB_HOST --user=\$DB_USER --password=\$DB_PASSWORD \$DB_NAME
+    mysqldump --port=\$MYSQL_PORT --host=\$MYSQL_HOST --user=\$MYSQL_USER --password=\$MYSQL_PASSWORD \$MYSQL_DATABASE
   fi;
 else
   export VARBASE_PROCESS_COMMAND=$_instance_name
@@ -100,6 +107,10 @@ EOL
     Header always append X-Content-Type-Options nosniff
 
     RewriteEngine on
+
+    RewriteCond %{REQUEST_URI} autodiscover/autodiscover.xml [NC]
+    RewriteRule . - [F]
+    
     RewriteCond %{HTTP_HOST} !$VHOST_DOMAIN$ [NC]
     RewriteCond %{QUERY_STRING} (^|&)q=(user(/|$)|users(/|$)|admin(/|$)|node(/|$)) [NC,OR]
     RewriteCond %{REQUEST_URI} /(admin|user|users|node)(/|$) [NC,OR]
