@@ -15,8 +15,9 @@ RUN echo "Download and configure Varbase ..." \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config github-oauth.github.com ${GITHUB_OAUTH_ARG} --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv remove drupal/core-project-message --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drush/drush --working-dir /opt/src/varbase \
-    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches --json '{"drupal/datetime": {"https://www.drupal.org/project/drupal/issues/2966735": "patches/2966735-13-validate-datetime-views-filter.patch"}}' --working-dir /opt/src/varbase \
-    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv update drupal/datetime --working-dir /opt/src/varbase \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches-file 'patches/patches.json' --working-dir /opt/src/varbase \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drupal/core:9.2.3 drupal/pathologic:1.0.0-alpha2 --working-dir /opt/src/varbase \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drupal/core:9.2.3 drupal/pathologic:1.0.0-alpha2 --working-dir /opt/src/varbase \
     && source /opt/bin/configure.sh \
     && chmod a-w /opt/src/varbase/docroot/sites/default/settings.php
 
