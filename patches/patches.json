@@ -1,10 +1,10 @@
 {
   "patches": {
     "drupal/core": {
-      "https://www.drupal.org/project/drupal/issues/2966735": "patches/2966735-13-validate-datetime-views-filter.patch"
+      "https://www.drupal.org/project/drupal/issues/2966735": "/opt/patches/2966735-13-validate-datetime-views-filter.patch"
     },
     "drupal/pathologic": {
-      "https://www.drupal.org/project/pathologic/issues/2418369": "patches/internal_url_handling-2418369-15.patch"
+      "https://www.drupal.org/project/pathologic/issues/2418369": "/opt/patches/internal_url_handling-2418369-15.patch"
     }
   }
 }
