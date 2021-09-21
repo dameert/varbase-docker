@@ -8,6 +8,7 @@ ARG GITHUB_OAUTH_ARG=""
 ENV VARBASE_VERSION=${VERSION_ARG:-9.0.1}
 
 COPY bin/buildtime/ /opt/bin/
+COPY patches/ /opt/patches/
 
 RUN echo "Download and configure Varbase ..." \
     && mkdir -p /opt/src \
@@ -15,7 +16,7 @@ RUN echo "Download and configure Varbase ..." \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config github-oauth.github.com ${GITHUB_OAUTH_ARG} --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv remove drupal/core-project-message --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drush/drush --working-dir /opt/src/varbase \
-    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches-file 'patches/patches.json' --working-dir /opt/src/varbase \
+    && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv config extra.patches-file '/opt/patches/patches.json' --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drupal/core:9.2.3 drupal/pathologic:1.0.0-alpha2 --working-dir /opt/src/varbase \
     && COMPOSER_MEMORY_LIMIT=-1 composer -vvvv require drupal/core:9.2.3 drupal/pathologic:1.0.0-alpha2 --working-dir /opt/src/varbase \
     && source /opt/bin/configure.sh \
